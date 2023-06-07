@@ -11,14 +11,15 @@ dependencies:
   flutter:
     sdk: flutter
   sqflite: ^2.0.2+1
+  analyzer: ^4.1.0
+  source_gen: ^1.2.2
+  build: ^2.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^1.0.0
-  source_gen: ^1.2.2
   build_runner: ^2.1.11
-  sqflite_common_ffi: ^2.1.1+1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
