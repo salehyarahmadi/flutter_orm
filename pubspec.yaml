@@ -1,6 +1,6 @@
 name: flutter_orm
 description: An annotation-based ORM for Flutter inspired by the Room persistence library. This library is based on sqflite and wraps it for better APIs.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/salehyarahmadi/flutter_orm
 
 environment:
