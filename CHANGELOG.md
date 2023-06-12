@@ -9,3 +9,7 @@
 ## 0.0.3
 
 * Separate generator
+
+## 0.0.4
+
+* Bug fix
