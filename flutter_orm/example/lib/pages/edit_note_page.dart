@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:example/dao/note_dao.dart';
 import 'package:example/db/note_db.dart';
 import 'package:example/entities/note.dart';
+import 'package:flutter/material.dart';
 
 class EditNotePage extends StatefulWidget {
   final NoteDB noteDB;

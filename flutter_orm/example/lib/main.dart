@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:example/database_builder/database_builder.dart';
 import 'package:example/db/note_db.dart';
 import 'package:example/entities/note.dart';
 import 'package:example/pages/notes_list_page.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());

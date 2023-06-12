@@ -10,7 +10,7 @@ Supports Android, iOS and MacOS.
 * Supports custom type converters
 * Supports migrations
 
-Usage example: 
+Usage example:
 * [notes](https://github.com/salehyarahmadi/flutter_orm/tree/main/example): Simple flutter notes project working on Android/iOS
 
 The library is in Beta and isn't completely stable.
@@ -30,7 +30,7 @@ For help getting started with Flutter, view the online
 
 ### Entity(Table)
 
-For create an entity or table, you can use `@Entity` annotation on a class. 
+For create an entity or table, you can use `@Entity` annotation on a class.
 You can set `tableName` and `indices` for this table, in this annotation.
 If you don't set `tableName`, the class name will be set as the default name.
 You have to set primary key for table using `@PrimaryKey` annotation.
@@ -75,7 +75,7 @@ class Note {
 
 ### Database
 
-For create a database, you can use `@DB` annotation on an abstract class. 
+For create a database, you can use `@DB` annotation on an abstract class.
 Database entities(tables) must be defined in this annotation.
 Configuration methods like `OnConfigure`, `OnCreate`, `OnOpen`, `OnUpgrade` and `OnDowngrade` for actions like Migration can implement in this class.
 

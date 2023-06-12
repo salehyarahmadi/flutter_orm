@@ -1,8 +1,8 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:flutter_orm/annotations/entity_annotations.dart';
+import 'package:flutter_orm/utils/index.dart';
 import 'package:flutter_orm_generator/code_generators/base/code_generator_adapter.dart';
 import 'package:flutter_orm_generator/extensions/extensions.dart';
-import 'package:flutter_orm/utils/index.dart';
 
 class EntityIndicesQueryBuilderCodeGeneratorAdapter
     extends CodeGeneratorAdapter {

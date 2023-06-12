@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:example/dao/note_dao.dart';
 import 'package:example/db/note_db.dart';
 import 'package:example/entities/note.dart';
 import 'package:example/pages/add_note_page.dart';
 import 'package:example/pages/edit_note_page.dart';
 import 'package:example/pages/note_page.dart';
+import 'package:flutter/material.dart';
 
 class NotesListPage extends StatefulWidget {
   final NoteDB noteDB;

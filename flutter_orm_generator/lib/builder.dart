@@ -1,7 +1,7 @@
 import 'package:build/build.dart';
+import 'package:source_gen/source_gen.dart';
 import 'generators/db_builder_generator.dart';
 import 'generators/db_generator.dart';
-import 'package:source_gen/source_gen.dart';
 
 Builder dbBuilder(BuilderOptions options) =>
     LibraryBuilder(DBGenerator(), generatedExtension: '.db.dart');

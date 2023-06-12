@@ -1,10 +1,11 @@
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:flutter_orm/annotations/db_annotations.dart';
-import 'package:flutter_orm/utils/index.dart';
-import 'package:flutter_orm/converter/built_in_support_converters_helper.dart';
-import 'element_extensions.dart';
-import 'package:flutter_orm_generator/utils/constants.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:flutter_orm/annotations/db_annotations.dart';
+import 'package:flutter_orm/converter/built_in_support_converters_helper.dart';
+import 'package:flutter_orm/utils/index.dart';
+import 'package:flutter_orm_generator/utils/constants.dart';
+
+import 'element_extensions.dart';
 
 extension StringExtension on String {
   bool isBuiltIn() {

@@ -1,0 +1,13 @@
+builders:
+  db_builder:
+    import: 'package:flutter_orm_generator/builder.dart'
+    builder_factories: [ 'dbBuilder' ]
+    build_extensions: { '.dart': [ '.db.dart' ] }
+    auto_apply: dependents
+    build_to: source
+  db_builder_builder:
+    import: 'package:flutter_orm_generator/builder.dart'
+    builder_factories: [ 'dbBuilderBuilder' ]
+    build_extensions: { '.dart': [ '.dbbuilder.dart' ] }
+    auto_apply: dependents
+    build_to: source
