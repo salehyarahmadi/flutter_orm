@@ -23,6 +23,12 @@ In your flutter project add the dependency:
 dependencies:
   ...
   flutter_orm:
+  sqflite:
+
+dev_dependencies:
+  ...
+  flutter_orm_generator:
+  build_runner:
 ```
 
 For help getting started with Flutter, view the online
@@ -108,6 +114,8 @@ After define this class, you can create and access to database like this:
 ```dart
 NoteDB db = await DBContext.getNoteDB();
 ```
+
+Both `DB` and `DBBuilder` class, must be defined in separated files.
 
 ### Dao
 
