@@ -1,6 +1,3 @@
-import 'package:flutter_orm/db_config/db_config.dart';
-
-
 /// Annotation for initialize databases and generate methods for
 /// access to databases.
 /// It must be applied on an abstract class.
@@ -43,11 +40,11 @@ class _DBBuilderFields {
 ///   entities: [Note],
 /// )
 /// @TypeConverters(Converters)
-/// abstract class NoteDB implements OnUpgrade {
+/// abstract class NoteDB {
 ///   NoteDao noteDao();
 ///
-///   @override
-///   Future<void> onUpgrade(Database? db, int oldVersion, int newVersion) async {
+///   @OnUpgrade()
+///   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
 ///     print('Migration');
 ///   }
 /// }
@@ -59,6 +56,7 @@ class DB {
   final int version;
   final bool readOnly;
   final bool singleInstance;
+  final List<Object> migrations;
 
   const DB({
     required this.name,
@@ -66,6 +64,7 @@ class DB {
     this.entities = const [],
     this.readOnly = false,
     this.singleInstance = true,
+    this.migrations = const [],
   });
 }
 
@@ -81,6 +80,8 @@ class _DBFields {
   String get readOnly => 'readOnly';
 
   String get singleInstance => 'singleInstance';
+
+  String get migrations => 'migrations';
 }
 
 /// Annotation for define type converters for database.
@@ -118,4 +119,99 @@ class _TypeConvertersFields {
 /// ```
 class TypeConverter {
   const TypeConverter();
+}
+
+/// Annotation for define OnConfigure method for database.
+/// Prototype of the function called before calling [onCreate]/[onUpdate]/[onOpen]
+/// when the database is open.
+/// Post initialization should happen here.
+/// This annotation must be applied on a method in the database class.
+/// Method syntax is also important.
+/// Example:
+/// ```dart
+/// @DB(
+///   name: 'note_db',
+///   version: 1,
+///   entities: [Note],
+/// )
+/// abstract class NoteDB {
+///   @OnConfigure()
+///   Future<void> onConfigure(Database db) async {
+///     print('onConfigure');
+///   }
+/// }
+/// ```
+class OnConfigure {
+  const OnConfigure();
+}
+
+/// Annotation for define OnOpen method for database.
+/// Prototype of the function called when the database is open.
+/// Post initialization should happen here.
+/// This annotation must be applied on a method in the database class.
+/// Method syntax is also important.
+/// Example:
+/// ```dart
+/// @DB(
+///   name: 'note_db',
+///   version: 1,
+///   entities: [Note],
+/// )
+/// abstract class NoteDB {
+///   @OnOpen()
+///   Future<void> onOpen(Database db) async {
+///     print('onOpen');
+///   }
+/// }
+/// ```
+class OnOpen {
+  const OnOpen();
+}
+
+/// Annotation for define Migration(OnUpgrade) method for database.
+/// Prototype of the function called when the version has increased.
+/// Schema migration (adding column, adding table, adding trigger...)
+/// should happen here.
+/// This annotation must be applied on a method in the database class.
+/// Method syntax is also important.
+/// Example:
+/// ```dart
+/// @DB(
+///   name: 'note_db',
+///   version: 1,
+///   entities: [Note],
+/// )
+/// abstract class NoteDB {
+///   @OnUpgrade()
+///   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
+///     print('onUpgrade');
+///   }
+/// }
+/// ```
+class OnUpgrade {
+  const OnUpgrade();
+}
+
+/// Annotation for define Migration(OnDowngrade) method for database.
+/// Prototype of the function called when the version has decreased.
+/// Schema migration (adding column, adding table, adding trigger...)
+/// should happen here.
+/// This annotation must be applied on a method in the database class.
+/// Method syntax is also important.
+/// Example:
+/// ```dart
+/// @DB(
+///   name: 'note_db',
+///   version: 1,
+///   entities: [Note],
+/// )
+/// abstract class NoteDB {
+///   @OnDowngrade()
+///   Future<void> onDowngrade(Database db, int oldVersion, int newVersion) async {
+///     print('onDowngrade');
+///   }
+/// }
+/// ```
+class OnDowngrade {
+  const OnDowngrade();
 }

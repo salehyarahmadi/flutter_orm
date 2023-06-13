@@ -11,7 +11,7 @@ class MethodParametersCountValidator extends ElementValidator<MethodElement> {
   check(MethodElement element) {
     if (element.parameters.length != count) {
       throw Exception(
-          message ?? '${element.name} method must has $count parameter(s)');
+          message ?? '${element.name} method must have $count parameter(s)');
     }
     checkNext(element);
   }

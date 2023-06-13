@@ -6,6 +6,9 @@ import 'package:flutter_orm/annotations/entity_annotations.dart';
 import 'package:flutter_orm/converter/built_in_support_converters_helper.dart';
 import 'package:flutter_orm_generator/extensions/extensions.dart';
 import 'package:flutter_orm_generator/utils/constants.dart';
+import 'package:flutter_orm_generator/validation/method/method_parameter_validator.dart';
+import 'package:flutter_orm_generator/validation/method/method_parameters_count_validator.dart';
+import 'package:flutter_orm_generator/validation/method/method_return_type_validator.dart';
 import 'package:source_gen/source_gen.dart';
 
 const _primaryKeyChecker = TypeChecker.fromRuntime(PrimaryKey);
@@ -19,6 +22,10 @@ const _dbChecker = TypeChecker.fromRuntime(DB);
 const _transactionalChecker = TypeChecker.fromRuntime(Transactional);
 const _entityChecker = TypeChecker.fromRuntime(Entity);
 const _ignoreChecker = TypeChecker.fromRuntime(Ignore);
+const _onUpgradeChecker = TypeChecker.fromRuntime(OnUpgrade);
+const _onDowngradeChecker = TypeChecker.fromRuntime(OnDowngrade);
+const _onConfigureChecker = TypeChecker.fromRuntime(OnConfigure);
+const _onOpenChecker = TypeChecker.fromRuntime(OnOpen);
 
 extension ClassElementExtension on ClassElement? {
   FieldElement findPrimaryKey() {
@@ -205,88 +212,108 @@ extension ClassElementExtension on ClassElement? {
         false;
   }
 
+  String? getOnUpgradeMethodName() {
+    String? onUpgradeMethodName;
+    this?.methods.forEach((method) {
+      if (_onUpgradeChecker.hasAnnotationOfExact(method)) {
+        _validateMigrationMethod(method);
+        onUpgradeMethodName = method.name;
+        return;
+      }
+    });
+
+    return onUpgradeMethodName;
+  }
+
+  String? getOnDowngradeMethodName() {
+    String? onDowngradeMethodName;
+    this?.methods.forEach((method) {
+      if (_onDowngradeChecker.hasAnnotationOfExact(method)) {
+        _validateMigrationMethod(method);
+        onDowngradeMethodName = method.name;
+        return;
+      }
+    });
+
+    return onDowngradeMethodName;
+  }
+
+  String? getOnConfigureMethodName() {
+    String? onConfigureMethodName;
+    this?.methods.forEach((method) {
+      if (_onConfigureChecker.hasAnnotationOfExact(method)) {
+        _validateOnConfigureMethod(method);
+        onConfigureMethodName = method.name;
+        return;
+      }
+    });
+
+    return onConfigureMethodName;
+  }
+
+  String? getOnOpenMethodName() {
+    String? onOpenMethodName;
+    this?.methods.forEach((method) {
+      if (_onOpenChecker.hasAnnotationOfExact(method)) {
+        _validateOnConfigureMethod(method);
+        onOpenMethodName = method.name;
+        return;
+      }
+    });
+
+    return onOpenMethodName;
+  }
+
+  _validateMigrationMethod(MethodElement method) {
+    MethodReturnTypeValidator(
+      (type) => type.isFutureVoid(),
+      '${method.name}: '
+      'OnUpgrade/OnDowngrade method\'s return type must be Future<void>',
+    )
+        .then(MethodParametersCountValidator(3))
+        .then(MethodParameterValidator(
+          0,
+          (type) => type.isSqfliteDatabase(),
+          '${method.name}: '
+          'The first element of OnUpgrade/OnDowngrade method '
+          'must be sqflite Database',
+        ))
+        .then(MethodParameterValidator(
+          1,
+          (type) => type.isDartCoreInt,
+          '${method.name}: '
+          'The second element of OnUpgrade/OnDowngrade method '
+          'must be int(old version)',
+        ))
+        .then(MethodParameterValidator(
+          2,
+          (type) => type.isDartCoreInt,
+          '${method.name}: '
+          'The third element of OnUpgrade/OnDowngrade method '
+          'must be int(new version)',
+        ))
+        .check(method);
+  }
+
+  _validateOnConfigureMethod(MethodElement method) {
+    MethodReturnTypeValidator(
+      (type) => type.isFutureVoid(),
+      '${method.name}: '
+      'OnConfigure method\'s return type must be Future<void>',
+    )
+        .then(MethodParametersCountValidator(1))
+        .then(MethodParameterValidator(
+          0,
+          (type) => type.isSqfliteDatabase(),
+          '${method.name}: '
+          'The first element of OnUpgrade/OnDowngrade method '
+          'must be sqflite Database',
+        ))
+        .check(method);
+  }
+
   bool hasMethod(String name) {
     return this?.methods.map((e) => e.name).toList().contains(name) ?? false;
-  }
-
-  bool hasOnConfigureInterface() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnConfigureInterface(): '
-          'this method must be call on db class element');
-    }
-    return hasInterface('OnConfigure');
-  }
-
-  bool hasOnConfigureMethod() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnConfigureMethod(): '
-          'this method must be call on db class element');
-    }
-    return hasMethod('onConfigure');
-  }
-
-  bool hasOnOpenInterface() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnOpenInterface(): '
-          'this method must be call on db class element');
-    }
-    return hasInterface('OnOpen');
-  }
-
-  bool hasOnOpenMethod() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnOpenMethod(): '
-          'this method must be call on db class element');
-    }
-    return hasMethod('onOpen');
-  }
-
-  bool hasOnUpgradeInterface() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnUpgradeInterface(): '
-          'this method must be call on db class element');
-    }
-    return hasInterface('OnUpgrade');
-  }
-
-  bool hasOnUpgradeMethod() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnUpgradeMethod(): '
-          'this method must be call on db class element');
-    }
-    return hasMethod('onUpgrade');
-  }
-
-  bool hasOnDowngradeInterface() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnDowngradeInterface(): '
-          'this method must be call on db class element');
-    }
-    return hasInterface('OnDowngrade');
-  }
-
-  bool hasOnDowngradeMethod() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnDowngradeMethod(): '
-          'this method must be call on db class element');
-    }
-    return hasMethod('onDowngrade');
-  }
-
-  bool hasOnCreateInterface() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnCreateInterface(): '
-          'this method must be call on db class element');
-    }
-    return hasInterface('OnCreate');
-  }
-
-  bool hasOnCreateMethod() {
-    if (!_dbChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('hasOnCreateMethod(): '
-          'this method must be call on db class element');
-    }
-    return hasMethod('onCreate');
   }
 
   MethodElement? findMethod(String methodName) {
