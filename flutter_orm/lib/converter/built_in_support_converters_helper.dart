@@ -6,6 +6,8 @@ import 'package:flutter_orm/converter/nullable_bool_converter.dart';
 import 'package:flutter_orm/converter/nullable_date_time_converter.dart';
 import 'package:flutter_orm/converter/nullable_double_converter.dart';
 
+/// Helper class for convert build-in support types to
+/// proper sqlite database type dynamically.
 class BuiltInSupportConvertersHelper {
   static final Map<String, String> _builtInSupportSqliteType = {
     'bool': 'INTEGER NOT NULL',
