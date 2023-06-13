@@ -19,3 +19,7 @@
 * Change database configuration syntax
 * Bug Fix
 * Optimization
+
+## 0.0.6
+
+* Optimization
