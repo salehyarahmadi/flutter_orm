@@ -1,4 +1,3 @@
-
 export 'package:flutter_orm/annotations/db_annotations.dart';
 export 'package:flutter_orm/annotations/dao_annotations.dart';
 export 'package:flutter_orm/annotations/entity_annotations.dart';
