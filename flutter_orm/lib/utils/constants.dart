@@ -1,2 +1,0 @@
-const String builtInSupportConvertersHelperClassName =
-    'BuiltInSupportConvertersHelper';

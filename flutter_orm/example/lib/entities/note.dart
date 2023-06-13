@@ -1,5 +1,4 @@
-import 'package:flutter_orm/annotations/entity_annotations.dart';
-import 'package:flutter_orm/utils/index.dart';
+import 'package:flutter_orm/flutter_orm.dart';
 
 @Entity(indices: [
   Index(columns: ['text'], unique: true)

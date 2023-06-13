@@ -3,9 +3,7 @@ import 'package:example/custom_objects/custom_note.dart';
 import 'package:example/dao/note_dao.dart';
 import 'package:example/entities/note.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_orm/annotations/db_annotations.dart';
-import 'package:flutter_orm/converter/built_in_support_converters_helper.dart';
-import 'package:flutter_orm/utils/raw_data.dart';
+import 'package:flutter_orm/flutter_orm.dart';
 import 'package:sqflite/sqflite.dart';
 
 part 'note_db.db.dart';

@@ -1,5 +1,5 @@
 import 'package:example/db/note_db.dart';
-import 'package:flutter_orm/annotations/db_annotations.dart';
+import 'package:flutter_orm/flutter_orm.dart';
 
 part 'database_builder.dbbuilder.dart';
 

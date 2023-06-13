@@ -1,9 +1,7 @@
 import 'package:example/custom_objects/custom_note.dart';
 import 'package:example/entities/note.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_orm/annotations/dao_annotations.dart';
-import 'package:flutter_orm/enums/on_conflict_strategy.dart';
-import 'package:flutter_orm/utils/raw_data.dart';
+import 'package:flutter_orm/flutter_orm.dart';
 
 @Dao()
 abstract class NoteDao {
