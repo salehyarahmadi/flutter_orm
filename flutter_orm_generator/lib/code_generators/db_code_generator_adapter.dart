@@ -5,11 +5,6 @@ import 'package:flutter_orm_generator/code_generators/base/code_generator_adapte
 import 'package:flutter_orm_generator/code_generators/converters_helper_code_generator_adapter.dart';
 import 'package:flutter_orm_generator/code_generators/dao_code_generator_adapter.dart';
 import 'package:flutter_orm_generator/code_generators/dao_override_code_generator_adapter.dart';
-import 'package:flutter_orm_generator/code_generators/default_on_configure_code_generator_adapter.dart';
-import 'package:flutter_orm_generator/code_generators/default_on_create_code_generator_adapter.dart';
-import 'package:flutter_orm_generator/code_generators/default_on_downgrade_code_generator_adapter.dart';
-import 'package:flutter_orm_generator/code_generators/default_on_open_code_generator_adapter.dart';
-import 'package:flutter_orm_generator/code_generators/default_on_upgrade_code_generator_adapter.dart';
 import 'package:flutter_orm_generator/code_generators/entity_helper_class_code_generator_adapter.dart';
 import 'package:flutter_orm_generator/code_generators/on_create_code_generator_adapter.dart';
 import 'package:flutter_orm_generator/extensions/extensions.dart';
@@ -38,31 +33,6 @@ class DBCodeGeneratorAdapter extends CodeGeneratorAdapter {
     bool singleInstance =
         annotation.peek(DB.fields.singleInstance)?.boolValue ?? true;
 
-    String defaultOnConfigure =
-        CodeGeneratorBuilder(DefaultOnConfigureCodeGeneratorAdapter())
-            .element(dbClass)
-            .generate();
-
-    String defaultOnOpen =
-        CodeGeneratorBuilder(DefaultOnOpenCodeGeneratorAdapter())
-            .element(dbClass)
-            .generate();
-
-    String defaultOnUpgrade =
-        CodeGeneratorBuilder(DefaultOnUpgradeCodeGeneratorAdapter())
-            .element(dbClass)
-            .generate();
-
-    String defaultOnDowngrade =
-        CodeGeneratorBuilder(DefaultOnDowngradeCodeGeneratorAdapter())
-            .element(dbClass)
-            .generate();
-
-    String defaultOnCreate =
-        CodeGeneratorBuilder(DefaultOnCreateCodeGeneratorAdapter())
-            .element(dbClass)
-            .generate();
-
     String onCreate =
         CodeGeneratorBuilder(OnCreateCodeGeneratorAdapter(dbClass, annotation))
             .generate();
@@ -78,6 +48,11 @@ class DBCodeGeneratorAdapter extends CodeGeneratorAdapter {
             .generate();
 
     String implClassName = className.implClassName();
+
+    String? onUpgradeMethodName = dbClass.getOnUpgradeMethodName();
+    String? onDowngradeMethodName = dbClass.getOnDowngradeMethodName();
+    String? onConfigureMethodName = dbClass.getOnConfigureMethodName();
+    String? onOpenMethodName = dbClass.getOnOpenMethodName();
 
     return '''
 part of '${path.substring(path.lastIndexOf('/') + 1)}';
@@ -103,10 +78,10 @@ class $implClassName extends $className {
         version: $version,
         readOnly: $readOnly,
         singleInstance: $singleInstance,
-        ${dbClass.hasOnConfigureInterface() ? 'onConfigure: onConfigure,' : ''}
-        ${dbClass.hasOnOpenInterface() ? 'onOpen: onOpen,' : ''}
-        ${dbClass.hasOnUpgradeInterface() ? 'onUpgrade: onUpgrade,' : ''}
-        ${dbClass.hasOnDowngradeInterface() ? 'onDowngrade: onDowngrade,' : ''}        
+        ${onConfigureMethodName != null ? 'onConfigure: $onConfigureMethodName,' : ''}
+        ${onOpenMethodName != null ? 'onOpen: $onOpenMethodName,' : ''}
+        ${onUpgradeMethodName != null ? 'onUpgrade: $onUpgradeMethodName,' : ''}
+        ${onDowngradeMethodName != null ? 'onDowngrade: $onDowngradeMethodName,' : ''}        
         onCreate: (db, version) async {
           $onCreate
         },
@@ -118,16 +93,6 @@ class $implClassName extends $className {
   Database? getDB() {
     return _database;
   }
-  
-  $defaultOnConfigure
-  
-  $defaultOnOpen
-  
-  $defaultOnUpgrade
-  
-  $defaultOnDowngrade
-  
-  $defaultOnCreate
   
   $daoOverrides
 

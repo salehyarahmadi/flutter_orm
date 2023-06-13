@@ -17,10 +17,6 @@ class OnCreateCodeGeneratorAdapter extends CodeGeneratorAdapter {
   String generate(Element? element) {
     String onCreate = '';
     onCreate += _generateEntitiesTable(dbClass, annotation);
-    if (dbClass.hasOnCreateInterface()) {
-      onCreate += '\n';
-      onCreate += 'await onCreate(db, version);';
-    }
     return onCreate;
   }
 

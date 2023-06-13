@@ -85,4 +85,8 @@ extension DartTypeExtension on DartType {
     if (element == null) return false;
     return toString().isListOfEntity(dbClass);
   }
+
+  bool isSqfliteDatabase() {
+    return this.nameWithNullable() == 'Database';
+  }
 }
