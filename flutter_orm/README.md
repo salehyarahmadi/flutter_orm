@@ -10,7 +10,7 @@ Supports Android, iOS and MacOS.
 * Supports custom type converters
 * Supports migrations
 
-Usage example:
+Usage example: 
 * [notes](https://github.com/salehyarahmadi/flutter_orm/tree/main/example): Simple flutter notes project working on Android/iOS
 
 The library is in Beta and isn't completely stable.
@@ -23,18 +23,36 @@ In your flutter project add the dependency:
 dependencies:
   ...
   flutter_orm:
+  sqflite:
+
+dev_dependencies:
+  ...
+  flutter_orm_generator:
+  build_runner:
 ```
 
 For help getting started with Flutter, view the online
 [documentation](https://flutter.io/).
 
-### Entity(Table)
+## Import
 
-For create an entity or table, you can use `@Entity` annotation on a class.
+```dart
+import 'package:flutter_orm/flutter_orm.dart';
+```
+
+Note that, if you make any change in structure of database(include `DB`, `Dao`, `Entity` and etc), you have to run below command for apply changes.
+
+```dart
+flutter pub run build_runner build --delete-conflicting-outputs;
+```
+
+## Entity(Table)
+
+For create an entity or table, you can use `@Entity` annotation on a class. 
 You can set `tableName` and `indices` for this table, in this annotation.
 If you don't set `tableName`, the class name will be set as the default name.
-You have to set primary key for table using `@PrimaryKey` annotation.
-The entity must have exactly one primary key and only integer primary key can be auto auto generate.
+You have to set primary key for table by using `@PrimaryKey` annotation.
+The entity must have exactly one primary key and only integer primary key can be auto auto generated.
 Auto generated primary key must be nullable.
 All properties of the class that this annotation applied on, map to a column in the table unless properties that `@Ignore` annotation are applied on. Default column name is property name. If you want to change it use `@Column` annotation and set `name` property.
 
@@ -73,11 +91,11 @@ class Note {
 }
 ```
 
-### Database
+## Database
 
-For create a database, you can use `@DB` annotation on an abstract class.
+For create a database, you can use `@DB` annotation on an abstract class. 
 Database entities(tables) must be defined in this annotation.
-Configuration methods like `OnConfigure`, `OnCreate`, `OnOpen`, `OnUpgrade` and `OnDowngrade` for actions like Migration can implement in this class.
+Configuration methods like `OnConfigure`, `OnCreate`, `OnOpen`, `OnUpgrade` and `OnDowngrade` for actions like Migration can define in this class.
 
 ```dart
 @DB(
@@ -85,17 +103,32 @@ Configuration methods like `OnConfigure`, `OnCreate`, `OnOpen`, `OnUpgrade` and 
   version: 1,
   entities: [Note],
 )
-abstract class NoteDB implements OnUpgrade {
-  @override
-  Future<void> onUpgrade(Database? db, int oldVersion, int newVersion) async {
-    print('Migration');
+abstract class NoteDB {
+  @OnUpgrade()
+  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
+    print('onUpgrade');
+  }
+
+  @OnDowngrade()
+  Future<void> onDowngrade(Database db, int oldVersion, int newVersion) async {
+    print('onDowngrade');
+  }
+
+  @OnConfigure()
+  Future<void> onConfigure(Database db) async {
+    print('onConfigure');
+  }
+
+  @OnOpen()
+  Future<void> onOpen(Database db) async {
+    print('onOpen');
   }
 }
 ```
 
-### Database Builder
+## Database Builder
 
-For initialize databases and generate methods for access to databases, you have to define an abstract class with `@DBBuilder` annotation and pass databases class name to `databases` paramater of `@DBBuilder` annotation.
+For initialize databases and generate methods for access to databases, you have to define an abstract class with `@DBBuilder` annotation and pass databases class to `databases` paramater of `@DBBuilder` annotation.
 You don't need to do anything extra.
 
 ```dart
@@ -109,7 +142,9 @@ After define this class, you can create and access to database like this:
 NoteDB db = await DBContext.getNoteDB();
 ```
 
-### Dao
+Both `DB` and `DBBuilder` class, must be defined in separated files.
+
+## Dao
 
 For Create `Dao`(Data Access Object) you can use `@Dao` annotation. `@Dao` annotation must apply on an abstract class.
 In this class you can define methods for access and manipulate data in tables.
@@ -137,10 +172,11 @@ abstract class NoteDB {
 For access to dao, do like this:
 ```dart
 NoteDB noteDB = await DBContext.getNoteDB();
-int count = await noteDB.noteDao().count() ?? 0;
+final dao = noteDB.noteDao();
+int count = await dao.count() ?? 0;
 ```
 
-#### Insert
+### Insert
 
 For insert data in your tables, you can use `@Insert` annotation.
 Methods that annotated with this annotation can have only one input parameter that is an `Entity` or List of an `Entity` and cannot be nullable.
@@ -158,7 +194,7 @@ abstract class NoteDao {
 }
 ```
 
-#### Update
+### Update
 
 For update data in your tables, you can use `@Update` annotation.
 Methods that annotated with this annotation can have only one input parameter that is an `Entity` or List of an `Entity` and cannot be nullable.
@@ -176,7 +212,7 @@ abstract class NoteDao {
 }
 ```
 
-#### Delete
+### Delete
 
 For delete data in your tables, you can use `@Delete` annotation.
 Methods that annotated with this annotation can have only one input parameter that is an `Entity` and cannot be nullable.
@@ -191,7 +227,7 @@ abstract class NoteDao {
 }
 ```
 
-#### Query
+### Query
 
 For define raw query to access or manipulate your data, you can use `@Query` annotation.
 You have to pass your raw query as a String to `query` property of this annotation. Also, you have to detect the return type, yourself.
@@ -239,7 +275,7 @@ abstract class NoteDao {
 }
 ```
 
-#### Transaction
+### Transaction
 
 Transactions can define using `@Transactional` annotation.
 For define transaction you have to use other dao methods name as `sequentialActions` and pass required parameters by `@InsertParam`, `@UpdateParam`, `@DeleteParam` and `@QueryParam` annotations. For example if the first method of the `sequentialActions` property, is an `insert` method, you have to define an input parameter with `@InsertParam` annotation and correct type based on original method.
@@ -265,7 +301,7 @@ abstract class NoteDao {
 ```
 
 
-### TypeConverter
+## TypeConverter
 
 If there are types that doesn't support internally, you can define these types yourself, using `@TypeConverter` annotation.
 You can define a class and write methods for convert these types to a supported type. these methods must annotated with `@TypeConverter` annotation.
@@ -301,7 +337,7 @@ abstract class NoteDB {
 
 ```
 
-### built-in types support:
+## built-in types support:
 * int
 * num
 * String
