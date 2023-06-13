@@ -13,3 +13,9 @@
 ## 0.0.4
 
 * Bug fix
+
+## 0.0.5
+
+* Change database configuration syntax
+* Bug Fix
+* Optimization
