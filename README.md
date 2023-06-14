@@ -143,6 +143,25 @@ NoteDB db = await DBContext.getNoteDB();
 ```
 
 Both `DB` and `DBBuilder` class, must be defined in separated files.
+Also generated files for these classes, must be bind to original file using `part` keyword.
+
+```dart
+part 'filename.dbbuilder.dart'
+
+@DBBuilder(databases: [NoteDB])
+abstract class DatabaseBuilder {}
+```
+
+```dart
+part 'filename.db.dart'
+
+@DB(
+  name: 'note_db',
+  version: 1,
+  entities: [Note],
+)
+abstract class NoteDB {}
+```
 
 ## Dao
 
