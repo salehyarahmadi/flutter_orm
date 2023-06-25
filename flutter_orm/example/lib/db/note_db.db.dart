@@ -72,7 +72,11 @@ CREATE TABLE Note(
 	createDate TEXT NOT NULL,
 	updateDate TEXT,
 	lat REAL,
-	lng REAL
+	lng REAL,
+	addr_city TEXT,
+	addr_streeeeeeet TEXT,
+	addr_addrName_nameOfAddress TEXT,
+	addr_addrName_flag INTEGER
 );
 """;
   }
@@ -89,26 +93,53 @@ ON Note (text);
     return Note(
       id: data['id'] as int?,
       text: data['text'] as String,
-      isEdited: BuiltInSupportConvertersHelper.to('bool', data['isEdited']),
-      createDate:
-          BuiltInSupportConvertersHelper.to('DateTime', data['createDate']),
+      isEdited: PredefinedConvertersHelper.to('bool', data['isEdited']),
+      createDate: PredefinedConvertersHelper.to('DateTime', data['createDate']),
       updateDate:
-          BuiltInSupportConvertersHelper.to('DateTime?', data['updateDate']),
-      latitude: BuiltInSupportConvertersHelper.to('double?', data['lat']),
-      longitude: BuiltInSupportConvertersHelper.to('double?', data['lng']),
+          PredefinedConvertersHelper.to('DateTime?', data['updateDate']),
+      latitude: PredefinedConvertersHelper.to('double?', data['lat']),
+      longitude: PredefinedConvertersHelper.to('double?', data['lng']),
+      address: addressFromJson(data),
+    );
+  }
+
+  static AddressName? addressNameFromJson(Map<String, Object?> data) {
+    if (data['addr_addrName_nameOfAddress'] == null) return null;
+    if (data['addr_addrName_flag'] == null) return null;
+
+    return AddressName(
+      name: data['addr_addrName_nameOfAddress'] as String,
+      flag: PredefinedConvertersHelper.to('bool', data['addr_addrName_flag']),
+    );
+  }
+
+  static Address? addressFromJson(Map<String, Object?> data) {
+    if (data['addr_city'] == null) return null;
+
+    if (addressNameFromJson(data) == null) return null;
+
+    return Address(
+      city: data['addr_city'] as String,
+      street: data['addr_streeeeeeet'] as String?,
+      addressName: addressNameFromJson(data)!,
     );
   }
 
   static Map<String, Object?> toJson(Note entity) {
     return {
       'text': entity.text,
-      'isEdited': BuiltInSupportConvertersHelper.from('bool', entity.isEdited),
+      'isEdited': PredefinedConvertersHelper.from('bool', entity.isEdited),
       'createDate':
-          BuiltInSupportConvertersHelper.from('DateTime', entity.createDate),
+          PredefinedConvertersHelper.from('DateTime', entity.createDate),
       'updateDate':
-          BuiltInSupportConvertersHelper.from('DateTime?', entity.updateDate),
-      'lat': BuiltInSupportConvertersHelper.from('double?', entity.latitude),
-      'lng': BuiltInSupportConvertersHelper.from('double?', entity.longitude),
+          PredefinedConvertersHelper.from('DateTime?', entity.updateDate),
+      'lat': PredefinedConvertersHelper.from('double?', entity.latitude),
+      'lng': PredefinedConvertersHelper.from('double?', entity.longitude),
+      'addr_city': entity.address?.city,
+      'addr_streeeeeeet': entity.address?.street,
+      'addr_addrName_nameOfAddress': entity.address?.addressName.name,
+      'addr_addrName_flag': PredefinedConvertersHelper.from(
+          'bool?', entity.address?.addressName.flag),
     };
   }
 }
@@ -244,7 +275,7 @@ select count(*) from Note
   Future<List<Note>> getNotes(bool isEdited, {Transaction? txn}) async {
     var executor = txn ?? db;
     List<Map<String, Object?>>? records = await executor?.rawQuery('''
-select * from Note where isEdited= "${BuiltInSupportConvertersHelper.from("bool", isEdited)}"
+select * from Note where isEdited= "${PredefinedConvertersHelper.from("bool", isEdited)}"
 ''');
 
     List<Note> list = [];
@@ -273,7 +304,7 @@ select * from Note where id IN (${ids.map((e) => "$e").toList().join(",")})
       {Transaction? txn}) async {
     var executor = txn ?? db;
     List<Map<String, Object?>>? records = await executor?.rawQuery('''
-select * from Note where lat IN (${lats.map((e) => "${BuiltInSupportConvertersHelper.from("double", e)}").toList().join(",")})
+select * from Note where lat IN (${lats.map((e) => "${PredefinedConvertersHelper.from("double", e)}").toList().join(",")})
 ''');
 
     List<Note> list = [];
@@ -302,7 +333,7 @@ select lat from Note
 
     List<double> list = [];
     for (var record in records ?? []) {
-      list.add(BuiltInSupportConvertersHelper.to(
+      list.add(PredefinedConvertersHelper.to(
         "double",
         record[record.keys.first],
       ));
@@ -322,9 +353,9 @@ select id, text, lat, createDate from Note
       list.add(CustomNote(
         id: record['id'] as int,
         text: record['text'] as String,
-        latitude: BuiltInSupportConvertersHelper.to('double', record['lat']),
+        latitude: PredefinedConvertersHelper.to('double', record['lat']),
         createDate:
-            BuiltInSupportConvertersHelper.to('DateTime', record['createDate']),
+            PredefinedConvertersHelper.to('DateTime', record['createDate']),
       ));
     }
     return list;
@@ -341,9 +372,8 @@ select id, text, lat, createDate from Note where id= "$id"
       return CustomNote(
         id: records?[0]['id'] as int,
         text: records?[0]['text'] as String,
-        latitude:
-            BuiltInSupportConvertersHelper.to('double', records?[0]['lat']),
-        createDate: BuiltInSupportConvertersHelper.to(
+        latitude: PredefinedConvertersHelper.to('double', records?[0]['lat']),
+        createDate: PredefinedConvertersHelper.to(
             'DateTime', records?[0]['createDate']),
       );
     }

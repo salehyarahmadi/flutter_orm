@@ -21,6 +21,9 @@ class Note {
   @Ignore()
   final String? ignoreTest;
 
+  @Embedded(prefix: 'addr')
+  final Address? address;
+
   Note({
     this.id,
     required this.text,
@@ -30,5 +33,31 @@ class Note {
     this.latitude,
     this.longitude,
     this.ignoreTest,
+    this.address,
   });
+}
+
+class Address {
+  final String city;
+
+  @Column(name: 'streeeeeeet')
+  final String? street;
+
+  @Embedded(prefix: 'addrName')
+  final AddressName addressName;
+
+  Address({
+    required this.city,
+    required this.street,
+    required this.addressName,
+  });
+}
+
+class AddressName {
+  @Column(name: 'nameOfAddress')
+  final String name;
+
+  final bool flag;
+
+  AddressName({required this.name, required this.flag});
 }

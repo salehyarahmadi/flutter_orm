@@ -110,4 +110,11 @@ extension ElementExtension on Element? {
     if (!_checker.hasAnnotationOfExact(this!)) return null;
     return _checker.firstAnnotationOfExact(this!)?.getField(fieldName);
   }
+
+  String? getPackageName() {
+    String? location = this?.location?.toString();
+    return location
+        ?.substring(0, location.indexOf("/"))
+        .replaceFirst("package:", "");
+  }
 }

@@ -37,11 +37,14 @@ extension ClassElementExtension on ClassElement? {
     throw Exception('${this!.name} has not primary key');
   }
 
-  List<FieldElement> getColumnsForTable({bool includePrimaryKey = false}) {
+  List<FieldElement> getColumnsForTable({
+    bool includePrimaryKey = false,
+    bool entityCheck = true,
+  }) {
     if (this == null) {
       throw Exception('element is null');
     }
-    if (!_entityChecker.hasAnnotationOfExact(this!)) {
+    if (entityCheck && !_entityChecker.hasAnnotationOfExact(this!)) {
       throw Exception('${this!.name} is not Entity class');
     }
     List<FieldElement> list = [];
@@ -130,7 +133,7 @@ extension ClassElementExtension on ClassElement? {
     if (typeConvertersClass != null) {
       for (var method in (typeConvertersClass as ClassElement).methods) {
         if (_typeConverterChecker.hasAnnotationOfExact(method)) {
-          if (method.parameters.first.type.isNotBuiltIn()) {
+          if (method.parameters.first.type.isNotBuiltInType()) {
             convertibleTypes.putIfAbsent(
                 method.parameters.first.type.toString(),
                 () => method.returnType.toString());
@@ -159,7 +162,7 @@ extension ClassElementExtension on ClassElement? {
               method.returnType.getDisplayString(withNullability: false);
           String parameterTypeName = method.parameters.first.type
               .getDisplayString(withNullability: false);
-          if (returnTypeName.isBuiltIn()) {
+          if (returnTypeName.isBuiltInType()) {
             list.add("""
               static ${method.returnType.toString()} from${isParameterTypeNullable ? 'Nullable' : ''}$parameterTypeName(value) {
                 return ${typeConvertersClass.name}.${method.name}(value as ${method.parameters.first.type.toString()});
@@ -186,9 +189,8 @@ extension ClassElementExtension on ClassElement? {
     String? sqliteType;
     if (builtInTypes.containsKey(dartType)) {
       sqliteType = builtInTypes[dartType]!;
-    } else if (dartType.isBuiltInSupport()) {
-      sqliteType =
-          BuiltInSupportConvertersHelper.getProperSqliteType(dartType)!;
+    } else if (dartType.isPredefinedConverterType()) {
+      sqliteType = PredefinedConvertersHelper.getProperSqliteType(dartType)!;
     } else if (getUserDefinedConvertibleTypes().keys.contains(dartType)) {
       sqliteType = builtInTypes[getUserDefinedConvertibleTypes()[dartType]];
     }

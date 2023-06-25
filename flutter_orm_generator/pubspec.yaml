@@ -10,8 +10,8 @@ dependencies:
   analyzer: ^5.13.0
   source_gen: ^1.3.2
   build: ^2.4.0
-  flutter_orm: ^0.0.6
-#    path: ../flutter_orm
+  flutter_orm:
+    path: ../flutter_orm
 
 
 dev_dependencies:

@@ -8,8 +8,8 @@ import 'package:flutter_orm/converter/nullable_double_converter.dart';
 
 /// Helper class for convert build-in support types to
 /// proper sqlite database type dynamically.
-class BuiltInSupportConvertersHelper {
-  static final Map<String, String> _builtInSupportSqliteType = {
+class PredefinedConvertersHelper {
+  static final Map<String, String> _predefinedConverterTypes = {
     'bool': 'INTEGER NOT NULL',
     'bool?': 'INTEGER',
     'DateTime': 'TEXT NOT NULL',
@@ -18,7 +18,7 @@ class BuiltInSupportConvertersHelper {
     'double?': 'REAL',
   };
 
-  static final Map<String, BaseConverter> _builtInSupportConverters = {
+  static final Map<String, BaseConverter> _predefinedConverters = {
     'bool': BoolConverter(),
     'bool?': NullableBoolConverter(),
     'DateTime': DateTimeConverter(),
@@ -27,19 +27,19 @@ class BuiltInSupportConvertersHelper {
     'double?': NullableDoubleConverter(),
   };
 
-  static bool isBuiltInSupport(String dartType) {
-    return _builtInSupportConverters.keys.contains(dartType);
+  static bool isPredefinedConverterType(String dartType) {
+    return _predefinedConverters.keys.contains(dartType);
   }
 
   static String? getProperSqliteType(String dartType) {
-    return _builtInSupportSqliteType[dartType];
+    return _predefinedConverterTypes[dartType];
   }
 
   static dynamic to(String type, value) {
-    return _builtInSupportConverters[type]?.to(value);
+    return _predefinedConverters[type]?.to(value);
   }
 
   static dynamic from(String type, value) {
-    return _builtInSupportConverters[type]?.from(value);
+    return _predefinedConverters[type]?.from(value);
   }
 }

@@ -10,7 +10,7 @@ class BuiltInParametersValidator extends ElementValidator<MethodElement> {
   @override
   check(MethodElement element) {
     for (var parameter in element.parameters) {
-      if (parameter.type.isNotBuiltIn()) {
+      if (parameter.type.isNotBuiltInType()) {
         throw Exception(message ??
             '${element.name}: raw query method parameters must be built-in type');
       }

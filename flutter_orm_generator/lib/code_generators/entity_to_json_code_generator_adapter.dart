@@ -44,22 +44,58 @@ static Map<String, Object?> toJson($entityClassName $_entityParameterName) {
     return result;
   }
 
-  String _columnFields(ClassElement entityClass) {
+  String _columnFields(
+    ClassElement entityClass, {
+    bool entityCheck = true,
+    String prevFieldName = '',
+    String prevPrefix = '',
+  }) {
     String result = '';
-    List<FieldElement> columns = entityClass.getColumnsForTable();
+    List<FieldElement> columns =
+        entityClass.getColumnsForTable(entityCheck: entityCheck);
     for (var field in columns) {
-      String columnName = field.getColumnName();
-      if (field.type.isBuiltIn()) {
-        result += '\'$columnName\' : $_entityParameterName.${field.name},\n';
-      } else if (field.type.isBuiltInSupport()) {
+      String columnName = prevPrefix +
+          (prevPrefix.isNotEmpty ? '_' : '') +
+          field.getColumnName();
+
+      if (field.isEmbeddedField()) {
+        result += _columnFields(field.type.element as ClassElement,
+            entityCheck: false,
+            prevFieldName: prevFieldName +
+                (prevFieldName.isNotEmpty ? '.' : '') +
+                field.name +
+                (field.type.isNullable() ? '?' : ''),
+            prevPrefix: prevPrefix +
+                (prevPrefix.isNotEmpty ? '_' : '') +
+                (field.getStringFieldFromAnnotation(
+                        Embedded, Embedded.fields.prefix) ??
+                    field.name));
+        continue;
+      }
+
+      String fieldLocation = _entityParameterName +
+          '.' +
+          prevFieldName +
+          (prevFieldName.isNotEmpty ? '.' : '') +
+          field.name;
+
+      String fieldType = field.type.toString() +
+          ((!field.type.isNullable() && fieldLocation.contains('?'))
+              ? '?'
+              : '');
+
+      if (field.type.isBuiltInType()) {
+        result += '\'$columnName\' : $fieldLocation,\n';
+      } else if (field.type.isPredefinedConverterType()) {
         result +=
-            "'$columnName' : $builtInSupportConvertersHelperClassName.from('${field.type.toString()}', $_entityParameterName.${field.name}),\n";
+            "'$columnName' : $predefinedConvertersHelperClassName.from('$fieldType', $fieldLocation),\n";
       } else {
-        bool isNullable = field.type.toString().contains('?');
+        bool isNullable =
+            field.type.isNullable() || fieldLocation.contains('?');
         String fieldTypeName =
             field.type.getDisplayString(withNullability: false);
         result +=
-            '\'$columnName\' : $convertersHelperClassName.from${isNullable ? 'Nullable' : ''}$fieldTypeName($_entityParameterName.${field.name}),\n';
+            '\'$columnName\' : $convertersHelperClassName.from${isNullable ? 'Nullable' : ''}$fieldTypeName($fieldLocation),\n';
       }
     }
     return result;

@@ -16,7 +16,7 @@ import 'package:flutter_orm/converter/nullable_double_converter.dart';
 /// [TO] must be a type that is supported by sqlite like int, String and etc.
 /// After implement class, you have to add your converter in
 /// [_builtInSupportSqliteType] and [_builtInSupportConverters] variables
-/// in [BuiltInSupportConvertersHelper] class.
+/// in [PredefinedConvertersHelper] class.
 /// Example:
 /// ```dart
 /// class BoolConverter implements BaseConverter<bool, int> {

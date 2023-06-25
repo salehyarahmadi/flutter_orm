@@ -16,9 +16,9 @@ class SupportParametersValidator extends ElementValidator<MethodElement> {
               .toString()
               .substring(5, parameter.type.toString().lastIndexOf('>'))
           : parameter.type.toString();
-      if (typeName.isBuiltIn()) continue;
+      if (typeName.isBuiltInType()) continue;
 
-      if (typeName.isBuiltInSupport()) continue;
+      if (typeName.isPredefinedConverterType()) continue;
 
       if (dbClass.getUserDefinedConvertibleTypes().keys.contains(typeName)) {
         continue;

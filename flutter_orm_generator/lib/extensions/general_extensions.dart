@@ -8,16 +8,16 @@ import 'package:flutter_orm_generator/utils/constants.dart';
 import 'element_extensions.dart';
 
 extension StringExtension on String {
-  bool isBuiltIn() {
+  bool isBuiltInType() {
     return builtInTypes.keys.contains(this);
   }
 
-  bool isNotBuiltIn() {
+  bool isNotBuiltInType() {
     return !builtInTypes.keys.contains(this);
   }
 
-  bool isBuiltInSupport() {
-    return BuiltInSupportConvertersHelper.isBuiltInSupport(this);
+  bool isPredefinedConverterType() {
+    return PredefinedConvertersHelper.isPredefinedConverterType(this);
   }
 
   bool isNullable() {

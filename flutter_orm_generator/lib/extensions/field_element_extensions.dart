@@ -6,6 +6,7 @@ import 'extensions.dart';
 
 const _primaryKeyChecker = TypeChecker.fromRuntime(PrimaryKey);
 const _columnChecker = TypeChecker.fromRuntime(Column);
+const _embeddedChecker = TypeChecker.fromRuntime(Embedded);
 
 extension FieldElementExtension on FieldElement {
   String getColumnName() {
@@ -17,5 +18,9 @@ extension FieldElementExtension on FieldElement {
       return getStringFieldFromAnnotation(Column, Column.fields.name) ?? name;
     }
     return name;
+  }
+
+  bool isEmbeddedField() {
+    return _embeddedChecker.hasAnnotationOfExact(this);
   }
 }

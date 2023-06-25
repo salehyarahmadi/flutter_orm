@@ -95,3 +95,16 @@ class _ColumnFields {
 class Ignore {
   const Ignore();
 }
+
+class Embedded {
+  static _EmbeddedFields fields = const _EmbeddedFields();
+  final String? prefix;
+
+  const Embedded({this.prefix});
+}
+
+class _EmbeddedFields {
+  const _EmbeddedFields();
+
+  String get prefix => 'prefix';
+}

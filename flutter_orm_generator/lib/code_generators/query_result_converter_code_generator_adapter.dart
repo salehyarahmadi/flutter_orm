@@ -30,7 +30,7 @@ class QueryResultConverterCodeGeneratorAdapter extends CodeGeneratorAdapter {
       return '';
     }
 
-    if (singularType.isBuiltIn() && isList) {
+    if (singularType.isBuiltInType() && isList) {
       return '''
             List<$singularType> list = [];
             for(var record in records ?? []) {
@@ -40,17 +40,17 @@ class QueryResultConverterCodeGeneratorAdapter extends CodeGeneratorAdapter {
             ''';
     }
 
-    if (singularType.isBuiltIn() && !isList) {
+    if (singularType.isBuiltInType() && !isList) {
       return '''
             return (records?[0][records[0].keys.first]) as $singularType;
             ''';
     }
 
-    if (singularType.isBuiltInSupport() && isList) {
+    if (singularType.isPredefinedConverterType() && isList) {
       return '''
             List<$singularType> list = [];
             for(var record in records ?? []) {
-              list.add(BuiltInSupportConvertersHelper.to(
+              list.add($predefinedConvertersHelperClassName.to(
                 "$singularType", 
                 record[record.keys.first],
               ));
@@ -59,9 +59,9 @@ class QueryResultConverterCodeGeneratorAdapter extends CodeGeneratorAdapter {
             ''';
     }
 
-    if (singularType.isBuiltInSupport() && !isList) {
+    if (singularType.isPredefinedConverterType() && !isList) {
       return '''
-        return BuiltInSupportConvertersHelper.to(
+        return $predefinedConvertersHelperClassName.to(
           "$singularType", 
           records?[0][records[0].keys.first],
         );

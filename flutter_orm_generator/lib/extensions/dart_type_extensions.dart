@@ -9,16 +9,16 @@ import 'package:source_gen/source_gen.dart';
 const _entityChecker = TypeChecker.fromRuntime(Entity);
 
 extension DartTypeExtension on DartType {
-  bool isBuiltIn() {
+  bool isBuiltInType() {
     return builtInTypes.keys.contains(toString());
   }
 
-  bool isNotBuiltIn() {
-    return !isBuiltIn();
+  bool isNotBuiltInType() {
+    return !isBuiltInType();
   }
 
-  bool isBuiltInSupport() {
-    return BuiltInSupportConvertersHelper.isBuiltInSupport(toString());
+  bool isPredefinedConverterType() {
+    return PredefinedConvertersHelper.isPredefinedConverterType(toString());
   }
 
   bool isNullable() {
@@ -88,5 +88,10 @@ extension DartTypeExtension on DartType {
 
   bool isSqfliteDatabase() {
     return this.nameWithNullable() == 'Database';
+  }
+
+  String getNullable() {
+    if (this.isNullable()) return this.nameWithNullable();
+    return this.nameWithoutNullable() + '?';
   }
 }

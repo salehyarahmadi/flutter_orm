@@ -352,4 +352,42 @@ void main() async {
     await dao.deleteAll();
     expect(await dao.count(), 0);
   });
+
+  test('embedded field test', () async {
+    String testCity = 'Test City';
+    String testStreet = 'Test Street';
+    String testAddressName = 'Test Address Name';
+    bool testAddressFlag = true;
+    dao.insert(
+      Note(
+        text: 'Test Note',
+        isEdited: false,
+        createDate: DateTime.now(),
+        latitude: 0.6,
+        address: Address(
+          city: testCity,
+          street: testStreet,
+          addressName: AddressName(
+            name: testAddressName,
+            flag: testAddressFlag,
+          ),
+        ),
+      ),
+    );
+    expect(await dao.count(), 1);
+
+    List<Note> notes = await dao.all();
+    Note insertedNote = notes.first;
+
+    expect(insertedNote, isNot(null));
+    expect(insertedNote.address, isNot(null));
+    expect(insertedNote.address!.addressName, isNot(null));
+    expect(insertedNote.address!.city, testCity);
+    expect(insertedNote.address!.street, testStreet);
+    expect(insertedNote.address!.addressName.name, testAddressName);
+    expect(insertedNote.address!.addressName.flag, testAddressFlag);
+
+    await dao.deleteAll();
+    expect(await dao.count(), 0);
+  });
 }
