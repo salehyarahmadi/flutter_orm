@@ -23,3 +23,7 @@
 ## 0.0.6
 
 * Optimization
+
+## 0.0.7
+
+* Support embedded field in entity
