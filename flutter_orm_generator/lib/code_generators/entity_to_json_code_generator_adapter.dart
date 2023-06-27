@@ -2,23 +2,28 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:flutter_orm/annotations/entity_annotations.dart';
 import 'package:flutter_orm_generator/code_generators/base/code_generator_adapter.dart';
 import 'package:flutter_orm_generator/extensions/extensions.dart';
-import 'package:flutter_orm_generator/utils/constants.dart';
+import 'package:flutter_orm_generator/utils/common.dart';
 import 'package:flutter_orm_generator/validation/class/has_valid_primary_key_validator.dart';
+import 'package:flutter_orm_generator/validation/class/is_entity_validator.dart';
+import 'package:flutter_orm_generator/validation/element/is_class_validator.dart';
+import 'package:flutter_orm_generator/validation/element/null_check_validator.dart';
 
 class EntityToJsonCodeGeneratorAdapter extends CodeGeneratorAdapter {
   final ClassElement dbClass;
 
-  EntityToJsonCodeGeneratorAdapter(this.dbClass);
-
+  late ClassElement entityClass;
   static const _entityParameterName = 'entity';
+
+  EntityToJsonCodeGeneratorAdapter(this.dbClass);
 
   @override
   String generate(Element? element) {
-    ClassElement entityClass = element as ClassElement;
+    _validation(element);
+    entityClass = element as ClassElement;
     String entityClassName = entityClass.displayName;
 
     String jsonFields = '';
-    jsonFields += _pkField(entityClass);
+    jsonFields += _pkField();
     jsonFields += _columnFields(entityClass);
 
     return '''
@@ -30,73 +35,39 @@ static Map<String, Object?> toJson($entityClassName $_entityParameterName) {
 ''';
   }
 
-  String _pkField(ClassElement entityClass) {
+  _validation(Element? element) {
+    NullCheckValidator()
+        .then(IsClassValidator())
+        .then(IsEntityValidator(dbClass))
+        .then(HasValidPrimaryKeyValidator())
+        .check(element);
+  }
+
+  String _pkField() {
     String result = '';
-    HasValidPrimaryKeyValidator().check(entityClass);
     FieldElement pkField = entityClass.findPrimaryKey();
     bool pkIsAutoIncrement = pkField.getBoolFieldFromAnnotation(
             PrimaryKey, PrimaryKey.fields.autoGenerate) ??
         false;
     if (!pkIsAutoIncrement) {
       String pkColumnName = pkField.getColumnName();
-      result += '\'$pkColumnName\' : $_entityParameterName.${pkField.name},\n';
+      result += jsonPair(
+        key: pkColumnName,
+        value: '$_entityParameterName.${pkField.name}',
+      );
     }
     return result;
   }
 
-  String _columnFields(
-    ClassElement entityClass, {
-    bool entityCheck = true,
-    String prevFieldName = '',
-    String prevPrefix = '',
-  }) {
+  String _columnFields(ClassElement clazz) {
     String result = '';
-    List<FieldElement> columns =
-        entityClass.getColumnsForTable(entityCheck: entityCheck);
+    List<FieldElement> columns = clazz.getInsertableFields();
     for (var field in columns) {
-      String columnName = prevPrefix +
-          (prevPrefix.isNotEmpty ? '_' : '') +
-          field.getColumnName();
-
       if (field.isEmbeddedField()) {
-        result += _columnFields(field.type.element as ClassElement,
-            entityCheck: false,
-            prevFieldName: prevFieldName +
-                (prevFieldName.isNotEmpty ? '.' : '') +
-                field.name +
-                (field.type.isNullable() ? '?' : ''),
-            prevPrefix: prevPrefix +
-                (prevPrefix.isNotEmpty ? '_' : '') +
-                (field.getStringFieldFromAnnotation(
-                        Embedded, Embedded.fields.prefix) ??
-                    field.name));
+        result += _columnFields(field.type.element as ClassElement);
         continue;
       }
-
-      String fieldLocation = _entityParameterName +
-          '.' +
-          prevFieldName +
-          (prevFieldName.isNotEmpty ? '.' : '') +
-          field.name;
-
-      String fieldType = field.type.toString() +
-          ((!field.type.isNullable() && fieldLocation.contains('?'))
-              ? '?'
-              : '');
-
-      if (field.type.isBuiltInType()) {
-        result += '\'$columnName\' : $fieldLocation,\n';
-      } else if (field.type.isPredefinedConverterType()) {
-        result +=
-            "'$columnName' : $predefinedConvertersHelperClassName.from('$fieldType', $fieldLocation),\n";
-      } else {
-        bool isNullable =
-            field.type.isNullable() || fieldLocation.contains('?');
-        String fieldTypeName =
-            field.type.getDisplayString(withNullability: false);
-        result +=
-            '\'$columnName\' : $convertersHelperClassName.from${isNullable ? 'Nullable' : ''}$fieldTypeName($fieldLocation),\n';
-      }
+      result += field.toJsonPair(entityClass, _entityParameterName);
     }
     return result;
   }

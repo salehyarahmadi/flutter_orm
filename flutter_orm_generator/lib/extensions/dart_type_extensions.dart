@@ -2,7 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:flutter_orm/annotations/entity_annotations.dart';
 import 'package:flutter_orm/converter/built_in_support_converters_helper.dart';
-import 'package:flutter_orm_generator/extensions/general_extensions.dart';
+import 'package:flutter_orm_generator/extensions/extensions.dart';
 import 'package:flutter_orm_generator/utils/constants.dart';
 import 'package:source_gen/source_gen.dart';
 

@@ -1,47 +1,41 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:flutter_orm_generator/code_generators/base/code_generator_adapter.dart';
-import 'package:flutter_orm_generator/code_generators/embedded_column_code_generator_adapter.dart';
 import 'package:flutter_orm_generator/extensions/extensions.dart';
+import 'package:flutter_orm_generator/validation/field/is_eligible_for_embedded_validator.dart';
 
 class ColumnCodeGeneratorAdapter extends CodeGeneratorAdapter {
   final ClassElement dbClass;
-  final bool entityCheck;
-  final String prefix;
-  final bool hasAnyNullablePrefix;
 
-  ColumnCodeGeneratorAdapter(
-    this.dbClass, {
-    this.entityCheck = true,
-    this.prefix = '',
-    this.hasAnyNullablePrefix = false,
-  });
+  late ClassElement entityClass;
+
+  ColumnCodeGeneratorAdapter(this.dbClass);
 
   @override
   String generate(Element? element) {
-    ClassElement entityClass = element as ClassElement;
-    List<FieldElement> columns =
-        entityClass.getColumnsForTable(entityCheck: entityCheck);
+    entityClass = element as ClassElement;
+    return _generate(entityClass);
+  }
 
+  String _generate(ClassElement clazz) {
+    List<FieldElement> fields = clazz.getInsertableFields();
     List<String> queries = [];
-    for (var column in columns) {
-      if (column.isEmbeddedField()) {
-        queries.add(CodeGeneratorBuilder(EmbeddedColumnCodeGeneratorAdapter(
-          dbClass,
-          prevPrefix: prefix,
-          hasAnyNullablePrefix:
-              hasAnyNullablePrefix || column.type.isNullable(),
-        )).element(column).generate());
+    for (var field in fields) {
+      if (field.isEmbeddedField()) {
+        _validation(field);
+        queries.add(_generate(field.type.element as ClassElement));
         continue;
       }
-      String name =
-          '${prefix}${prefix.isNotEmpty ? '_' : ''}${column.getColumnName()}';
-
-      bool isNullable = column.type.isNullable() || hasAnyNullablePrefix;
+      String name = field.getEmbeddedColumnName(entityClass);
+      bool isNullable = field.hasAnyNullablePrefix(entityClass);
       String columnType =
-          isNullable ? column.type.getNullable() : column.type.toString();
+          isNullable ? field.type.getNullable() : field.type.toString();
       queries.add("$name ${dbClass.getProperSqliteType(columnType)}");
     }
 
     return queries.join(",\n\t");
+  }
+
+  _validation(FieldElement embeddedField) {
+    IsEligibleForEmbeddedValidator(dbClass).check(embeddedField);
   }
 }

@@ -37,27 +37,25 @@ extension ClassElementExtension on ClassElement? {
     throw Exception('${this!.name} has not primary key');
   }
 
-  List<FieldElement> getColumnsForTable({
-    bool includePrimaryKey = false,
-    bool entityCheck = true,
-  }) {
+  List<FieldElement> getFields() {
     if (this == null) {
       throw Exception('element is null');
     }
-    if (entityCheck && !_entityChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('${this!.name} is not Entity class');
-    }
-    List<FieldElement> list = [];
-    for (FieldElement field in this?.fields ?? []) {
-      if (!field.isPrivate && !_ignoreChecker.hasAnnotationOfExact(field)) {
-        if (!includePrimaryKey &&
-            _primaryKeyChecker.hasAnnotationOfExact(field)) {
-          continue;
-        }
-        list.add(field);
-      }
-    }
-    return list;
+    return this!
+        .fields
+        .where((field) =>
+            !field.isPrivate && !_ignoreChecker.hasAnnotationOfExact(field))
+        .toList();
+  }
+
+  List<FieldElement> getInsertableFields() {
+    return getFields()
+        .where((field) =>
+            !_primaryKeyChecker.hasAnnotationOfExact(field) ||
+            getBoolFieldFromAnnotation(
+                    PrimaryKey, PrimaryKey.fields.autoGenerate) ==
+                false)
+        .toList();
   }
 
   List<MethodElement> getMethodsWithDaoReturnType() {
