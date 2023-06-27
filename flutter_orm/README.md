@@ -1,7 +1,7 @@
 # flutter_orm
 
 An annotation-based ORM for [Flutter](https://flutter.io) inspired by the [Room persistence library](https://developer.android.com/training/data-storage/room).
-This library is based on [sqflite](https://github.com/tekartik/sqflite) and wraps it for better APIs.
+This library is based on [sqflite](https://github.com/tekartik/sqflite) and wrapped it for better APIs.
 Supports Android, iOS and MacOS.
 
 * Simple APIs for create DB, Entities
@@ -9,6 +9,7 @@ Supports Android, iOS and MacOS.
 * Supports transactions
 * Supports custom type converters
 * Supports migrations
+* Supports embedded fields
 
 Usage example: 
 * [notes](https://github.com/salehyarahmadi/flutter_orm/tree/main/example): Simple flutter notes project working on Android/iOS
@@ -52,7 +53,7 @@ For create an entity or table, you can use `@Entity` annotation on a class.
 You can set `tableName` and `indices` for this table, in this annotation.
 If you don't set `tableName`, the class name will be set as the default name.
 You have to set primary key for table by using `@PrimaryKey` annotation.
-The entity must have exactly one primary key and only integer primary key can be auto auto generated.
+The entity must have exactly one primary key and only integer primary key can be auto generated.
 Auto generated primary key must be nullable.
 All properties of the class that this annotation applied on, map to a column in the table unless properties that `@Ignore` annotation are applied on. Default column name is property name. If you want to change it use `@Column` annotation and set `name` property.
 
@@ -91,11 +92,56 @@ class Note {
 }
 ```
 
+### Embedded Field
+If you want to use an object that you have defined yourself, in your entity, you can use `@Embedded` annotation.
+Suppose that the `Note` entity has an `address` property that is an object itself.
+In this situation, you can use `@Embedded` annotation on that field.
+Embedded objects also can have embedded fields.
+Embedded object fields, can have `@Column` and `@Ignore` annotation, but they can't have `@PrimaryKey`.
+You should note that the fields of embedded object, merge with entity fields in table.
+For example, for the below entity, created table has these columns: `id`, `text`, `address_lat` and `address_lng`.
+If you have noticed, embedded object fields has a prefix in its column name that is field name by default.
+You can change this prefix by change `prefix` property of `@Embedded` annotation.
+
+```dart
+@Entity()
+class Note {
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final String text;
+
+  @Embedded()
+  final Address? address;
+
+  Note({
+    this.id,
+    required this.text,
+    required this.isEdited,
+    this.address,
+  });
+}
+
+class Address {
+  @Column(name: 'lat')
+  final double latitude;
+
+  @Column(name: 'lng')
+  final double latitude;
+
+  Address({
+    required this.latitude,
+    required this.latitude,
+  });
+}
+```
+
+
 ## Database
 
 For create a database, you can use `@DB` annotation on an abstract class. 
 Database entities(tables) must be defined in this annotation.
-Configuration methods like `OnConfigure`, `OnCreate`, `OnOpen`, `OnUpgrade` and `OnDowngrade` for actions like Migration can define in this class.
+Configuration methods like `OnConfigure`, `OnOpen`, `OnUpgrade` and `OnDowngrade` for actions like Migration can define in this class.
 
 ```dart
 @DB(

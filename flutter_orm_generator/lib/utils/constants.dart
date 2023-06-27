@@ -10,5 +10,4 @@ const Map<String, String> builtInTypes = {
 };
 
 const String convertersHelperClassName = 'ConvertersHelper';
-const String builtInSupportConvertersHelperClassName =
-    'BuiltInSupportConvertersHelper';
+const String predefinedConvertersHelperClassName = 'PredefinedConvertersHelper';

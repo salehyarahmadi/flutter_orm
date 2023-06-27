@@ -37,24 +37,25 @@ extension ClassElementExtension on ClassElement? {
     throw Exception('${this!.name} has not primary key');
   }
 
-  List<FieldElement> getColumnsForTable({bool includePrimaryKey = false}) {
+  List<FieldElement> getFields() {
     if (this == null) {
       throw Exception('element is null');
     }
-    if (!_entityChecker.hasAnnotationOfExact(this!)) {
-      throw Exception('${this!.name} is not Entity class');
-    }
-    List<FieldElement> list = [];
-    for (FieldElement field in this?.fields ?? []) {
-      if (!field.isPrivate && !_ignoreChecker.hasAnnotationOfExact(field)) {
-        if (!includePrimaryKey &&
-            _primaryKeyChecker.hasAnnotationOfExact(field)) {
-          continue;
-        }
-        list.add(field);
-      }
-    }
-    return list;
+    return this!
+        .fields
+        .where((field) =>
+            !field.isPrivate && !_ignoreChecker.hasAnnotationOfExact(field))
+        .toList();
+  }
+
+  List<FieldElement> getInsertableFields() {
+    return getFields()
+        .where((field) =>
+            !_primaryKeyChecker.hasAnnotationOfExact(field) ||
+            getBoolFieldFromAnnotation(
+                    PrimaryKey, PrimaryKey.fields.autoGenerate) ==
+                false)
+        .toList();
   }
 
   List<MethodElement> getMethodsWithDaoReturnType() {
@@ -130,7 +131,7 @@ extension ClassElementExtension on ClassElement? {
     if (typeConvertersClass != null) {
       for (var method in (typeConvertersClass as ClassElement).methods) {
         if (_typeConverterChecker.hasAnnotationOfExact(method)) {
-          if (method.parameters.first.type.isNotBuiltIn()) {
+          if (method.parameters.first.type.isNotBuiltInType()) {
             convertibleTypes.putIfAbsent(
                 method.parameters.first.type.toString(),
                 () => method.returnType.toString());
@@ -159,7 +160,7 @@ extension ClassElementExtension on ClassElement? {
               method.returnType.getDisplayString(withNullability: false);
           String parameterTypeName = method.parameters.first.type
               .getDisplayString(withNullability: false);
-          if (returnTypeName.isBuiltIn()) {
+          if (returnTypeName.isBuiltInType()) {
             list.add("""
               static ${method.returnType.toString()} from${isParameterTypeNullable ? 'Nullable' : ''}$parameterTypeName(value) {
                 return ${typeConvertersClass.name}.${method.name}(value as ${method.parameters.first.type.toString()});
@@ -186,9 +187,8 @@ extension ClassElementExtension on ClassElement? {
     String? sqliteType;
     if (builtInTypes.containsKey(dartType)) {
       sqliteType = builtInTypes[dartType]!;
-    } else if (dartType.isBuiltInSupport()) {
-      sqliteType =
-          BuiltInSupportConvertersHelper.getProperSqliteType(dartType)!;
+    } else if (dartType.isPredefinedConverterType()) {
+      sqliteType = PredefinedConvertersHelper.getProperSqliteType(dartType)!;
     } else if (getUserDefinedConvertibleTypes().keys.contains(dartType)) {
       sqliteType = builtInTypes[getUserDefinedConvertibleTypes()[dartType]];
     }

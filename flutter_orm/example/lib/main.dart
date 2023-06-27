@@ -59,6 +59,11 @@ class _MyHomePageState extends State<MyHomePage> {
     int count = await noteDB.noteDao().count() ?? 0;
     if (count > 0) return;
     DateTime now = DateTime.now();
+    await noteDB.noteDao().insert(Note(
+          text: 'Mock Note 1',
+          createDate: now,
+          isEdited: false,
+        ));
     await noteDB.noteDao().bulkInsert([
       Note(
         text: 'Mock Note 1',
@@ -69,6 +74,19 @@ class _MyHomePageState extends State<MyHomePage> {
         text: 'Mock Note 2',
         createDate: now,
         isEdited: false,
+      ),
+      Note(
+        text: 'Mock Note 3(Embedded)',
+        createDate: now,
+        isEdited: false,
+        address: Address(
+          city: 'Tehran',
+          street: 'Saei',
+          addressName: AddressName(
+            name: 'Work',
+            flag: true,
+          ),
+        ),
       ),
     ]);
     print('mock notes inserted');

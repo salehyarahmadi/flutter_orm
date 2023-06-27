@@ -33,8 +33,8 @@ class TypeConvertersValidator extends ElementValidator<ClassElement> {
               .check(method);
           String returnType = method.returnType.toString();
           String parameterType = method.parameters.first.type.toString();
-          if ((returnType.isBuiltIn() || returnType.isBuiltInSupport()) &&
-              (parameterType.isBuiltIn() || parameterType.isBuiltInSupport())) {
+          if ((returnType.isBuiltInType() || returnType.isPredefinedConverterType()) &&
+              (parameterType.isBuiltInType() || parameterType.isPredefinedConverterType())) {
             throw Exception('built-in types cannot convert to each other: '
                 'from $parameterType to $returnType');
           }

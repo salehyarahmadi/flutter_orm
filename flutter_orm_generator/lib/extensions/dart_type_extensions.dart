@@ -2,23 +2,23 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:flutter_orm/annotations/entity_annotations.dart';
 import 'package:flutter_orm/converter/built_in_support_converters_helper.dart';
-import 'package:flutter_orm_generator/extensions/general_extensions.dart';
+import 'package:flutter_orm_generator/extensions/extensions.dart';
 import 'package:flutter_orm_generator/utils/constants.dart';
 import 'package:source_gen/source_gen.dart';
 
 const _entityChecker = TypeChecker.fromRuntime(Entity);
 
 extension DartTypeExtension on DartType {
-  bool isBuiltIn() {
+  bool isBuiltInType() {
     return builtInTypes.keys.contains(toString());
   }
 
-  bool isNotBuiltIn() {
-    return !isBuiltIn();
+  bool isNotBuiltInType() {
+    return !isBuiltInType();
   }
 
-  bool isBuiltInSupport() {
-    return BuiltInSupportConvertersHelper.isBuiltInSupport(toString());
+  bool isPredefinedConverterType() {
+    return PredefinedConvertersHelper.isPredefinedConverterType(toString());
   }
 
   bool isNullable() {
@@ -88,5 +88,10 @@ extension DartTypeExtension on DartType {
 
   bool isSqfliteDatabase() {
     return this.nameWithNullable() == 'Database';
+  }
+
+  String getNullable() {
+    if (this.isNullable()) return this.nameWithNullable();
+    return this.nameWithoutNullable() + '?';
   }
 }

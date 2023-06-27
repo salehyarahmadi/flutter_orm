@@ -91,10 +91,10 @@ $formattedQuery
           : parameterType.toString();
 
       String singleVarName = isParameterTypeList ? _e : variableName;
-      String replacement = parameterTypeName.isBuiltIn()
+      String replacement = parameterTypeName.isBuiltInType()
           ? '\$$singleVarName'
-          : (parameterTypeName.isBuiltInSupport()
-              ? '\${BuiltInSupportConvertersHelper.from("$parameterTypeName", $singleVarName)}'
+          : (parameterTypeName.isPredefinedConverterType()
+              ? '\${$predefinedConvertersHelperClassName.from("$parameterTypeName", $singleVarName)}'
               : '\${$convertersHelperClassName.from$parameterTypeName($singleVarName)}');
 
       if (!isInsideQuotation) {

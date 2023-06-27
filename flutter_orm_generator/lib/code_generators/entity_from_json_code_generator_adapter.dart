@@ -1,47 +1,74 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:flutter_orm_generator/code_generators/base/code_generator_adapter.dart';
 import 'package:flutter_orm_generator/extensions/extensions.dart';
-import 'package:flutter_orm_generator/utils/constants.dart';
+import 'package:flutter_orm_generator/utils/common.dart';
 
 class EntityFromJsonCodeGeneratorAdapter extends CodeGeneratorAdapter {
   final ClassElement dbClass;
 
-  EntityFromJsonCodeGeneratorAdapter(this.dbClass);
-
+  late ClassElement entityClass;
   static const _jsonParameterName = 'data';
+  List<String> _embeddedFieldsFromJsonMethods = [];
+
+  EntityFromJsonCodeGeneratorAdapter(this.dbClass);
 
   @override
   String generate(Element? element) {
-    ClassElement entityClass = element as ClassElement;
+    entityClass = element as ClassElement;
     String entityClassName = entityClass.displayName;
 
     return '''
 static $entityClassName fromJson(Map<String, Object?> $_jsonParameterName) {
   return $entityClassName(
-    ${_generateJsonFromEntity(entityClass)}
+    ${_generateEntityFromJson(entityClass)}
   );
 }
+
+${_embeddedFieldsFromJsonMethods.join('\n')}
+
 ''';
   }
 
-  String _generateJsonFromEntity(ClassElement entityClass) {
-    String result = '';
-    for (var field in entityClass.getColumnsForTable(includePrimaryKey: true)) {
-      String name = field.getColumnName();
+  String _generateEntityFromJson(ClassElement clazz) {
+    List<FieldElement> fields = clazz.getFields();
 
-      if (field.type.isBuiltIn()) {
-        result +=
-            '${field.name}: $_jsonParameterName[\'$name\'] as ${field.type.toString()},\n';
-      } else if (field.type.isBuiltInSupport()) {
-        result +=
-            "${field.name}: $builtInSupportConvertersHelperClassName.to('${field.type.toString()}', $_jsonParameterName['$name']),\n";
+    String result = '';
+    for (var field in fields) {
+      if (field.isEmbeddedField()) {
+        result += objPair(
+          key: field.name,
+          value:
+              '${field.name}FromJson($_jsonParameterName)${field.type.isNullable() ? '' : '!'}',
+        );
+        _embeddedFieldsFromJsonMethods
+            .add(_generateMethodForEmbeddedField(field));
       } else {
-        bool isNullable = field.type.isNullable();
-        String fieldTypeName = field.type.nameWithoutNullable();
-        result +=
-            '${field.name}: $convertersHelperClassName.to${isNullable ? 'Nullable' : ''}$fieldTypeName($_jsonParameterName[\'$name\']),\n';
+        result += field.toObjPair(
+          entityClass,
+          jsonParameterName: _jsonParameterName,
+        );
       }
     }
+
     return result;
+  }
+
+  String _generateMethodForEmbeddedField(FieldElement embeddedField) {
+    return '''
+static ${embeddedField.type.nameWithoutNullable()}? ${embeddedField.name}FromJson(Map<String, Object?> $_jsonParameterName) {
+${(embeddedField.type.element as ClassElement).fields.map((f) {
+      if (f.type.isNullable()) return '';
+      if (f.isEmbeddedField())
+        return 'if (${f.name}FromJson($_jsonParameterName) == null) return null;';
+      else
+        return 'if ($_jsonParameterName[\'${f.getEmbeddedColumnName(entityClass)}\'] == null) return null;';
+    }).join('\n')}
+
+  
+  return ${embeddedField.type.nameWithoutNullable()}(
+    ${_generateEntityFromJson(embeddedField.type.element as ClassElement)}
+  );
+}
+''';
   }
 }

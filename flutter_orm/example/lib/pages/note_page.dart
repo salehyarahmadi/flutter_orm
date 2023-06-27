@@ -115,6 +115,38 @@ class _NotePageState extends State<NotePage> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
+                      'AddressName: ${_note!.address?.addressName.name}',
+                      style: const TextStyle(fontSize: 14, color: Colors.green),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'City: ${_note!.address?.city}',
+                      style: const TextStyle(fontSize: 14, color: Colors.green),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Street: ${_note!.address?.city}',
+                      style: const TextStyle(fontSize: 14, color: Colors.green),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'AddressFlag: ${_note!.address?.addressName.flag}',
+                      style: const TextStyle(fontSize: 14, color: Colors.green),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
                       _note!.text,
                       style: const TextStyle(fontSize: 18),
                     ),

@@ -25,12 +25,12 @@ class CustomObjectFromJsonCodeGeneratorAdapter extends CodeGeneratorAdapter {
     for (var field in customObjectClass.getCustomObjectFields()) {
       String name = field.getColumnName();
 
-      if (field.type.isBuiltIn()) {
+      if (field.type.isBuiltInType()) {
         result +=
             '${field.name}: $jsonParameterName[\'$name\'] as ${field.type.toString()},\n';
-      } else if (field.type.isBuiltInSupport()) {
+      } else if (field.type.isPredefinedConverterType()) {
         result +=
-            "${field.name}: $builtInSupportConvertersHelperClassName.to('${field.type.toString()}', $jsonParameterName['$name']),\n";
+            "${field.name}: $predefinedConvertersHelperClassName.to('${field.type.toString()}', $jsonParameterName['$name']),\n";
       } else {
         bool isNullable = field.type.isNullable();
         String fieldTypeName = field.type.nameWithoutNullable();
