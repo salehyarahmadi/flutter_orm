@@ -43,6 +43,7 @@ class NoteDBImpl extends NoteDB {
           Batch batch = db.batch();
           batch.execute(NoteHelper.queryBuilder());
           batch.execute(NoteHelper.indicesBuilder());
+          batch.execute(UserHelper.queryBuilder());
           await batch.commit();
         },
       );
@@ -58,6 +59,11 @@ class NoteDBImpl extends NoteDB {
   NoteDao noteDao() {
     return NoteDaoImpl(getDB());
   }
+
+  @override
+  UserDao userDao() {
+    return UserDaoImpl(getDB());
+  }
 }
 
 class NoteHelper {
@@ -67,16 +73,20 @@ class NoteHelper {
     return """
 CREATE TABLE Note(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  text TEXT NOT NULL,
-	isEdited INTEGER NOT NULL,
-	createDate TEXT NOT NULL,
-	updateDate TEXT,
-	lat REAL,
-	lng REAL,
-	addr_city TEXT,
-	addr_streeeeeeet TEXT,
-	addr_addrName_nameOfAddress TEXT,
-	addr_addrName_flag INTEGER
+  text TEXT NOT NULL ,
+	isEdited INTEGER NOT NULL ,
+	createDate TEXT NOT NULL ,
+	updateDate TEXT ,
+	lat REAL ,
+	lng REAL ,
+	addr_city TEXT ,
+	addr_streeeeeeet TEXT ,
+	addr_addrName_nameOfAddress TEXT ,
+	addr_addrName_flag INTEGER ,
+	userId INTEGER NOT NULL ,
+	defaultValueTest1 TEXT DEFAULT 'dft',
+	defaultValueTest2 INTEGER DEFAULT 0,
+  FOREIGN KEY(userId) REFERENCES User(id) ON DELETE CASCADE ON UPDATE CASCADE 
 );
 """;
   }
@@ -100,6 +110,9 @@ ON Note (text);
       latitude: PredefinedConvertersHelper.to('double?', data['lat']),
       longitude: PredefinedConvertersHelper.to('double?', data['lng']),
       address: addressFromJson(data),
+      userId: data['userId'] as int,
+      defaultValueTest1: data['defaultValueTest1'] as String?,
+      defaultValueTest2: data['defaultValueTest2'] as int?,
     );
   }
 
@@ -140,6 +153,36 @@ ON Note (text);
       'addr_addrName_nameOfAddress': entity.address?.addressName.name,
       'addr_addrName_flag': PredefinedConvertersHelper.from(
           'bool?', entity.address?.addressName.flag),
+      'userId': entity.userId,
+      'defaultValueTest1': entity.defaultValueTest1,
+      'defaultValueTest2': entity.defaultValueTest2,
+    };
+  }
+}
+
+class UserHelper {
+  static const String tableName = 'User';
+
+  static String queryBuilder() {
+    return """
+CREATE TABLE User(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL 
+  
+);
+""";
+  }
+
+  static User fromJson(Map<String, Object?> data) {
+    return User(
+      id: data['id'] as int?,
+      name: data['name'] as String,
+    );
+  }
+
+  static Map<String, Object?> toJson(User entity) {
+    return {
+      'name': entity.name,
     };
   }
 }
@@ -406,5 +449,99 @@ test
       await insert(newNote, txn: txn);
       await deleteById(noteId, txn: txn);
     });
+  }
+}
+
+class UserDaoImpl implements UserDao {
+  final Database? db;
+
+  UserDaoImpl(this.db);
+
+  @override
+  Future<void> insert(User user, {Transaction? txn}) async {
+    var executor = txn ?? db;
+    await executor?.insert(
+      UserHelper.tableName,
+      UserHelper.toJson(user),
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  @override
+  Future<void> update(User user, {Transaction? txn}) async {
+    if (user.id != null) {
+      var executor = txn ?? db;
+      await executor?.update(
+        UserHelper.tableName,
+        UserHelper.toJson(user),
+        where: 'id = ?',
+        whereArgs: [user.id],
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+  }
+
+  @override
+  Future<void> delete(User user, {Transaction? txn}) async {
+    if (user.id != null) {
+      var executor = txn ?? db;
+      await executor?.delete(
+        'User',
+        where: 'id = ?',
+        whereArgs: [user.id],
+      );
+    }
+  }
+
+  @override
+  Future<Note?> getById(int id, {Transaction? txn}) async {
+    var executor = txn ?? db;
+    List<Map<String, Object?>>? records = await executor?.rawQuery('''
+select * from User where id= "$id"
+''');
+
+    if (records?.isNotEmpty ?? false) {
+      return NoteHelper.fromJson(records![0]);
+    }
+  }
+
+  @override
+  Future<List<User>> all({Transaction? txn}) async {
+    var executor = txn ?? db;
+    List<Map<String, Object?>>? records = await executor?.rawQuery('''
+select * from User
+''');
+
+    List<User> list = [];
+    for (var record in records ?? []) {
+      list.add(UserHelper.fromJson(record));
+    }
+    return list;
+  }
+
+  @override
+  Future<int?> count({Transaction? txn}) async {
+    var executor = txn ?? db;
+    List<Map<String, Object?>>? records = await executor?.rawQuery('''
+select count(*) from User
+''');
+
+    return (records?[0][records[0].keys.first]) as int?;
+  }
+
+  @override
+  Future<void> deleteAll({Transaction? txn}) async {
+    var executor = txn ?? db;
+    List<Map<String, Object?>>? records = await executor?.rawQuery('''
+delete from User
+''');
+  }
+
+  @override
+  Future<void> deleteById(int id, {Transaction? txn}) async {
+    var executor = txn ?? db;
+    List<Map<String, Object?>>? records = await executor?.rawQuery('''
+delete from User where id = "$id"
+''');
   }
 }

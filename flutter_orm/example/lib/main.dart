@@ -63,17 +63,20 @@ class _MyHomePageState extends State<MyHomePage> {
           text: 'Mock Note 1',
           createDate: now,
           isEdited: false,
+          userId: 1,
         ));
     await noteDB.noteDao().bulkInsert([
       Note(
         text: 'Mock Note 1',
         createDate: now,
         isEdited: false,
+        userId: 1,
       ),
       Note(
         text: 'Mock Note 2',
         createDate: now,
         isEdited: false,
+        userId: 1,
       ),
       Note(
         text: 'Mock Note 3(Embedded)',
@@ -87,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
             flag: true,
           ),
         ),
+        userId: 1,
       ),
     ]);
     print('mock notes inserted');
@@ -98,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
         createDate: now,
         updateDate: DateTime.now(),
         isEdited: true,
+        userId: 1,
       ),
       Note(
         id: 2,
@@ -106,6 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
         createDate: now,
         updateDate: DateTime.now(),
         isEdited: true,
+        userId: 1,
       ),
     ]);
     print('mock notes updated');

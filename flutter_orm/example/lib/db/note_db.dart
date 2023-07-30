@@ -1,6 +1,7 @@
 import 'package:example/converters/converters.dart';
 import 'package:example/custom_objects/custom_note.dart';
 import 'package:example/dao/note_dao.dart';
+import 'package:example/dao/user_dao.dart';
 import 'package:example/entities/note.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_orm/flutter_orm.dart';
@@ -13,11 +14,13 @@ part 'note_db.db.dart';
   version: 1,
   readOnly: false,
   singleInstance: true,
-  entities: [Note],
+  entities: [Note, User],
 )
 @TypeConverters(Converters)
 abstract class NoteDB {
   NoteDao noteDao();
+
+  UserDao userDao();
 
   @OnUpgrade()
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -31,6 +34,7 @@ abstract class NoteDB {
 
   @OnConfigure()
   Future<void> onConfigure(Database db) async {
+    db.execute('PRAGMA foreign_keys = ON;');
     print('onConfigure');
   }
 

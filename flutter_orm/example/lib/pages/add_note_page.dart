@@ -30,6 +30,7 @@ class _AddNotePageState extends State<AddNotePage> {
       createDate: DateTime.now(),
       latitude: 1.0521564564,
       longitude: 2.012144548,
+      userId: 1,
     );
     noteDao.insert(note).then((value) {
       Navigator.of(context).pop(true);

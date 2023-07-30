@@ -1,8 +1,20 @@
 import 'package:flutter_orm/flutter_orm.dart';
 
-@Entity(indices: [
-  Index(columns: ['text'], unique: true)
-])
+@Entity(
+  indices: [
+    Index(columns: ['text'], unique: true)
+  ],
+  foreignKeys: [
+    ForeignKey(
+      entity: User,
+      parentColumns: ['id'],
+      childColumns: ['userId'],
+      onDelete: ForeignKeyAction.CASCADE,
+      onUpdate: ForeignKeyAction.CASCADE,
+      deferred: false,
+    )
+  ],
+)
 class Note {
   @PrimaryKey(autoGenerate: true)
   final int? id;
@@ -24,6 +36,14 @@ class Note {
   @Embedded(prefix: 'addr')
   final Address? address;
 
+  final int userId;
+
+  @Column(name: 'defaultValueTest1', defaultValue: 'dft')
+  final String? defaultValueTest1;
+
+  @Column(name: 'defaultValueTest2', defaultValue: '0')
+  final int? defaultValueTest2;
+
   Note({
     this.id,
     required this.text,
@@ -34,6 +54,9 @@ class Note {
     this.longitude,
     this.ignoreTest,
     this.address,
+    required this.userId,
+    this.defaultValueTest1,
+    this.defaultValueTest2,
   });
 }
 
@@ -60,4 +83,17 @@ class AddressName {
   final bool flag;
 
   AddressName({required this.name, required this.flag});
+}
+
+@Entity()
+class User {
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final String name;
+
+  User({
+    this.id,
+    required this.name,
+  });
 }

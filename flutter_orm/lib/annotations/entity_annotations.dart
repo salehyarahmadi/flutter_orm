@@ -1,3 +1,4 @@
+import 'package:flutter_orm/utils/foreign_key.dart';
 import 'package:flutter_orm/utils/index.dart';
 
 /// Annotation for create table in database.
@@ -10,10 +11,27 @@ import 'package:flutter_orm/utils/index.dart';
 /// a column in the table unless properties that [Ignore] annotation
 /// are applied on. Default column name is property name. If you want to
 /// change it use [Column] annotation and set [name] property.
+/// Also you can set default value for columns using [defaultValue] property
+/// of [Column] annotation.
+/// You can define foreign keys using [foreignKeys] property of this annotation.
+/// Each item of [foreignKeys] property is a [ForeignKey] instance.
 /// ```dart
-/// @Entity(tableName: 'notes', indices: [
-///   Index(columns: ['text'], unique: true)
-/// ])
+/// @Entity(
+///   tableName: 'notes',
+///   indices: [
+///     Index(columns: ['text'], unique: true)
+///   ],
+///   foreignKeys: [
+///     ForeignKey(
+///       entity: User,
+///       parentColumns: ['id'],
+///       childColumns: ['userId'],
+///       onDelete: ForeignKeyAction.CASCADE,
+///       onUpdate: ForeignKeyAction.CASCADE,
+///       deferred: false,
+///     )
+///   ],
+/// )
 /// class Note {
 ///   @PrimaryKey(autoGenerate: true)
 ///   final int? id;
@@ -32,6 +50,14 @@ import 'package:flutter_orm/utils/index.dart';
 ///   @Ignore()
 ///   final String? ignoreTest;
 ///
+///   @Column(name: 'defaultValueTest1', defaultValue: 'test')
+///   final String? defaultValueTest1;
+///
+///   @Column(name: 'defaultValueTest2', defaultValue: '0')
+///   final int? defaultValueTest2;
+///
+///   final int userId;
+///
 ///   Note({
 ///     this.id,
 ///     required this.text,
@@ -41,6 +67,9 @@ import 'package:flutter_orm/utils/index.dart';
 ///     this.latitude,
 ///     this.longitude,
 ///     this.ignoreTest,
+///     this.defaultValueTest1,
+///     this.defaultValueTest2,
+///     required this.userId,
 ///   });
 /// }
 /// ```
@@ -48,8 +77,9 @@ class Entity {
   static _EntityFields fields = const _EntityFields();
   final String? tableName;
   final List<Index>? indices;
+  final List<ForeignKey>? foreignKeys;
 
-  const Entity({this.tableName, this.indices});
+  const Entity({this.tableName, this.indices, this.foreignKeys});
 }
 
 class _EntityFields {
@@ -58,6 +88,8 @@ class _EntityFields {
   String get tableName => 'tableName';
 
   String get indices => 'indices';
+
+  String get foreignKeys => 'foreignKeys';
 }
 
 /// Annotation for define primary key for your entity(table).
@@ -103,7 +135,8 @@ class _PrimaryKeyFields {
 }
 
 /// This annotation is used for when you want to change default name of
-/// column name of a field in table.
+/// column name of a field in table or when you want to set default value
+/// for column.
 /// You have to know that the default column name is property name.
 /// ```dart
 /// @Entity()
@@ -116,24 +149,34 @@ class _PrimaryKeyFields {
 ///   @Column(name: 'edited')
 ///   final bool isEdited;
 ///
+///   @Column(name: 'test', defaultValue: '1')
+///   final int? test;
+///
 ///   Note({
 ///     this.id,
 ///     required this.text,
 ///     required this.isEdited,
+///     this.test,
 ///   });
 /// }
 /// ```
 class Column {
   static _ColumnFields fields = const _ColumnFields();
   final String name;
+  final String? defaultValue;
 
-  const Column({required this.name});
+  const Column({
+    required this.name,
+    this.defaultValue,
+  });
 }
 
 class _ColumnFields {
   const _ColumnFields();
 
   String get name => 'name';
+
+  String get defaultValue => 'defaultValue';
 }
 
 /// If you want a field doesn't map to a column in table, you can use

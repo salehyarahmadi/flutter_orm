@@ -36,6 +36,7 @@ class _EditNotePageState extends State<EditNotePage> {
       createDate: widget.note.createDate,
       updateDate: DateTime.now(),
       latitude: widget.note.latitude,
+      userId: 1,
     );
     noteDao.update(note).then((value) {
       Navigator.of(context).pop(true);
