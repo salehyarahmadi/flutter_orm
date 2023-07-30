@@ -27,3 +27,8 @@
 ## 0.0.7
 
 * Support embedded field in entity
+
+## 0.0.8
+
+* Support column default value
+* Support foreign key
