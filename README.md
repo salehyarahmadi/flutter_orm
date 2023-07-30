@@ -10,6 +10,7 @@ Supports Android, iOS and MacOS.
 * Supports custom type converters
 * Supports migrations
 * Supports embedded fields
+* Supports foreign keys
 
 Usage example: 
 * [notes](https://github.com/salehyarahmadi/flutter_orm/tree/main/example): Simple flutter notes project working on Android/iOS
@@ -56,6 +57,7 @@ You have to set primary key for table by using `@PrimaryKey` annotation.
 The entity must have exactly one primary key and only integer primary key can be auto generated.
 Auto generated primary key must be nullable.
 All properties of the class that this annotation applied on, map to a column in the table unless properties that `@Ignore` annotation are applied on. Default column name is property name. If you want to change it use `@Column` annotation and set `name` property.
+Also you can set default value for columns using `defaultValue` property of `@Column` annotation.
 
 ```dart
 @Entity(tableName: 'notes', indices: [
@@ -79,6 +81,12 @@ class Note {
   @Ignore()
   final String? ignoreTest;
 
+  @Column(name: 'defaultValueTest1', defaultValue: 'test')
+  final String? defaultValueTest1;
+
+  @Column(name: 'defaultValueTest2', defaultValue: '0')
+  final int? defaultValueTest2;
+
   Note({
     this.id,
     required this.text,
@@ -88,9 +96,83 @@ class Note {
     this.latitude,
     this.longitude,
     this.ignoreTest,
+    this.defaultValueTest1,
+    this.defaultValueTest2,
   });
 }
 ```
+
+### Foreign Key
+Foreign keys allows you to specify constraints across entities such that SQLite will ensure that the relationship is valid when you modify the database.
+For define foreign key in entities, you have to set `foreignKeys` property of `@Entity` annotation and pass a list of `ForeignKey` instances to it.
+A foreign key constraint can be deferred until the transaction is complete. This is useful if you are doing bulk inserts into the database
+in a single transaction. By default, foreign key constraints are immediate but you can change this value by setting `deferred` to `true`.
+
+```dart
+@Entity()
+class User {
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final String name;
+
+  User({
+    this.id,
+    required this.name,
+  });
+}
+
+@Entity(
+  foreignKeys: [
+    ForeignKey(
+      entity: User,
+      parentColumns: ['id'],
+      childColumns: ['userId'],
+      onDelete: ForeignKeyAction.CASCADE,
+      onUpdate: ForeignKeyAction.CASCADE,
+      deferred: false,
+    )
+  ],
+)
+class Note {
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final String text;
+
+  final int userId;
+
+  Note({
+    this.id,
+    required this.text,
+    required this.userId,
+  });
+}
+```
+
+ `ForeignKey` class has these properties:
+ * `entity` : The parent Entity to reference. It must be a class annotated with `@Entity` and referenced in the same database.
+ * `parentColumns` : The list of column names in the parent Entity. Number of columns must match the number of columns specified in `childColumns`.
+ * `childColumns` : The list of column names in the current Entity. Number of columns must match the number of columns specified in `parentColumns`.
+ * `onDelete` : Action to take when the parent Entity is deleted from the database. Default value of `onDelete` is `ForeignKeyAction.NO_ACTION`.
+ * `onUpdate` : Action to take when the parent Entity is updated in the database. Default value of `onUpdate` is `ForeignKeyAction.NO_ACTION`.
+ * `deferred` : A foreign key constraint can be deferred until the transaction is complete. This is useful if you are doing bulk inserts into the database in a single transaction. By default, foreign key constraints are immediate but you can change it by setting this field to `true`.
+
+#### By default, SQLite does not enforce foreign keys. This is usually necessary explicitly turning it on.
+```dart
+@DB(
+  name: 'note_db',
+  version: 1,
+  entities: [Note, User],
+)
+abstract class NoteDB {
+  @OnConfigure()
+  Future<void> onConfigure(Database db) async {
+    db.execute('PRAGMA foreign_keys = ON;');
+  }
+}
+```
+
 
 ### Embedded Field
 If you want to use an object that you have defined yourself, in your entity, you can use `@Embedded` annotation.
